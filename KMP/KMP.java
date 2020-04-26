@@ -1,75 +1,72 @@
-public class KMP {
-    public static void main(String[] argv){
-	String originStr = "BBCFABCDABFABCDABCDABDE";
-	String subStr = "ABCDABD";
-	boolean flag = hasSubString(originStr,subStr);
-	System.out.println(flag);
-    }
-	
-    public static boolean hasSubString(String originStr, String subString) {
-        if ((null != originStr && null != subString) && (originStr.length() < subString.length())) {
-            return false;
-        }
-        char[] originStrChars = originStr.toCharArray();
-        char[] subStringChars = subString.toCharArray();
-        return matchString(originStrChars, subStringChars);
-    }
+public class KMP{
+	public static void main(String[] args) {
+		//abcababcabx
+		//abcabx
+		// String ori = "BBCFABCDABFABCDABCDABDE";
+		// String sub = "ABCDABD";
+		String ori = "abcababcabx";
+		String sub = "abcabx";
+		boolean flag = judge(ori,sub);
+		System.out.println("---flag="+flag);
+	}
 
-    /**
-     * KMP中的核心算法，获得记录跳转状态的next数组
-     *
-     * @param c
-     * @return
-     */
-    public static int[] matchTable(char[] c) {
-        int length = c.length;
-        int[] a = new int[length];
-        int i, j;
-        a[0] = 0;
-        i = 0;
-        for (j = 1; j < length; j++) {
-            i = a[j - 1];
-            if (c[j] == c[i]) {
-                a[j] = i+1;
-            } else {
-                a[j] = 0;
-            }
-        }
-        return a;
-    }
-
-    /**
-     * 匹配字符串
-     *
-     * @param originStrChars
-     * @param subStringChars
-     * @return
-     */
-    public static boolean matchString(char[] originStrChars, char[] subStringChars) {
-        int[] next = matchTable(subStringChars);
-	int i = 0;
-        int j = 0;
-        while (i < originStrChars.length  && j < subStringChars.length) {
-		if (j==0){
-			if(originStrChars[i] == subStringChars[j]){
+	//判断两个字符串是否相等
+	public static boolean judge(String ori, String sub){
+		// if((ori!=null && sub!=null) && ori.length()<sub.length()){
+		// 	return false;
+		// }
+		char[] oriArray = ori.toCharArray();
+		char[] subArray = sub.toCharArray();
+		int i=0,j = 0;
+		int[] kmpArray = next(sub);
+		while(i<oriArray.length && j<subArray.length){
+			if(oriArray[i]==subArray[j]){
+				i++;
 				j++;
-				i++;
 			}else{
-				i++;
-			}	
-		}else {
-			if (originStrChars[i] == subStringChars[j]){
-				j++;
-				i++;
-			}else{
-				j = next[j-1];
+				if (j==0) {
+					i++;
+				}else{
+					j=kmpArray[j];
+				}
 			}
-			
 		}
-        }
-        if (j < subStringChars.length) {
-            return false;
-        } else
-            return true;
-    }
+		if(j < subArray.length){
+			return false;
+		}
+		return true;
+	}
+
+	//构建next数组（用于回溯）
+	public static int[] next(String ori){
+		/*
+		核心就是对比当前index之前的字符前后缀知否一致
+		求解next数组的4种情况
+		1、默认next[0]=0,next[1]=0;
+		2、当i为0时，表示应该从从开始 
+		3、当ori[slow]==ori[fast],表示两个字符相等，则：slow++,fast++
+		4、当ori[slow]!=ori[fast]，则需要讲fast回溯到合理的位置
+		使用next数组来记录子串回溯的位置(即：主串与子串不相等的时候，回溯子串的位置)
+		*/
+		char[] oriArray = ori.toCharArray();
+		int[] kmpArray = new int[oriArray.length];
+		kmpArray[0] = 0;
+		int slow = 0;
+		int fast = 1;
+		for(int i=1;i<oriArray.length;i++){
+			if (i==1){
+				kmpArray[i] = 0;
+				continue;
+			}
+			if(oriArray[slow]==oriArray[fast]){
+				slow++;
+				kmpArray[i] = slow;
+			}else{
+				slow = kmpArray[i];
+			}
+			fast++;
+		}	
+		return kmpArray;
+	}
 }
+
